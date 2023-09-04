@@ -1,2 +1,3 @@
 # movies-explorer-api
-ссылка на бек: https://api.kino.nomoredomainsicu.ru
+IP-адрес 158.160.18.145
+Backend: https://api.kino.nomoredomainsicu.ru

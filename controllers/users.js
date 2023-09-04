@@ -8,17 +8,26 @@ const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
 const AuthError = require('../errors/AuthError');
 
+const {
+  BAD_REQUEST_ERROR,
+  AUTH_ERROR,
+  NOT_FOUND_ERROR,
+  CONFLICT_ERROR,
+  VALIDATION_ERROR,
+  CAST_ERROR,
+} = require('../utils/constants');
+
 module.exports.getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Произошла ошибка: Not Found');
+        throw new NotFoundError(NOT_FOUND_ERROR);
       }
       res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequestError('Произошла ошибка: Bad Request'));
+      if (err.name === CAST_ERROR) {
+        next(new BadRequestError(BAD_REQUEST_ERROR));
       } else {
         next(err);
       }
@@ -41,13 +50,15 @@ module.exports.setUserInfo = (req, res, next) => {
   )
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Произошла ошибка: Not Found');
+        throw new NotFoundError(NOT_FOUND_ERROR);
       }
       res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequestError('Произошла ошибка: Bad Request'));
+      if (err.code === 11000) {
+        next(new ConflictError(CONFLICT_ERROR));
+      } else if (err.name === VALIDATION_ERROR || err.name === CAST_ERROR) {
+        next(new BadRequestError(BAD_REQUEST_ERROR));
       } else {
         next(err);
       }
@@ -61,7 +72,10 @@ module.exports.loginUser = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'super-strong-secret', { expiresIn: '7d' });
       res.send({ token });
     })
-    .catch(() => next(new AuthError('Произошла ошибка: Auth Error')));
+    .catch(() => {
+      throw new AuthError(AUTH_ERROR);
+    })
+    .catch(next);
 };
 module.exports.createUser = (req, res, next) => {
   const {
@@ -84,9 +98,9 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        next(new ConflictError('Произошла ошибка: User with this email already exists'));
-      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequestError('Произошла ошибка: Bad Request'));
+        next(new ConflictError(CONFLICT_ERROR));
+      } else if (err.name === VALIDATION_ERROR || err.name === CAST_ERROR) {
+        next(new BadRequestError(BAD_REQUEST_ERROR));
       } else {
         next(err);
       }

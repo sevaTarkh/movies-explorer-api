@@ -5,23 +5,26 @@ const { errors } = require('celebrate');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const routerUser = require('./routes/users');
-const routerMovie = require('./routes/movies');
-const routerSignIn = require('./routes/signin');
-const routerSignUp = require('./routes/signup');
-const auth = require('./middlewares/auth');
+const helmet = require('helmet');
+const limiter = require('./middlewares/ratelimitter');
+const router = require('./routes/index');
 const { errorLogger, requestLogger } = require('./middlewares/logger');
 
-const handleError = require('./middlewares/handleerror');
+const {
+  MONGOBD_ADRESS,
+  CORS_ADRESS,
+} = require('./utils/constants');
 
-const NotFoundError = require('./errors/NotFoundError');
+const handleError = require('./middlewares/handleerror');
 
 const { PORT } = process.env;
 
 const app = express();
-app.use(cors({ origin: ['http://localhost:4001', 'https://kino.nomoredomainsicu.ru', 'https://api.kino.nomoredomainsicu.ru'], credentials: true }));
 
-mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb', {
+app.use(cors({ origin: CORS_ADRESS, credentials: true }));
+app.use(helmet());
+
+mongoose.connect(MONGOBD_ADRESS, {
   useNewUrlParser: true,
 });
 
@@ -29,16 +32,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(requestLogger);
+app.use(limiter);
 
-app.use('/', routerSignUp);
-app.use('/', routerSignIn);
-
-app.use(auth);
-app.use('/users', routerUser);
-app.use('/movies', routerMovie);
+app.use(router);
 
 app.use(errorLogger);
-app.use((req, res, next) => next(new NotFoundError('Произошла ошибка: Not Found')));
 app.use(errors());
 app.use(handleError);
 
