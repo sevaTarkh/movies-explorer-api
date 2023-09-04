@@ -19,7 +19,7 @@ const NotFoundError = require('./errors/NotFoundError');
 const { PORT } = process.env;
 
 const app = express();
-app.use(cors({ origin: ['http://localhost:4000', 'kino.nomoredomainsicu.ru'], credentials: true }));
+app.use(cors({ origin: ['http://localhost:4001', 'https://kino.nomoredomainsicu.ru', 'https://api.kino.nomoredomainsicu.ru'], credentials: true }));
 
 mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb', {
   useNewUrlParser: true,
