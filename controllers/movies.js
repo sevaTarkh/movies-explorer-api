@@ -14,9 +14,11 @@ const {
 } = require('../utils/constants');
 
 module.exports.getMovieInfo = (req, res, next) => {
-  const owner = res.user._id;
+  const owner = req.user._id;
   Movie.find({ owner })
-    .then((movie) => res.send(movie))
+    .then((movie) => {
+      res.send(movie);
+    })
     .catch(() => {
       throw new NotFoundError(NOT_FOUND_ERROR);
     })
@@ -61,7 +63,7 @@ module.exports.postMovie = (req, res, next) => {
       year: movie.year,
       description: movie.description,
       image: movie.image,
-      trailerLink: movie.trailer,
+      trailerLink: movie.trailerLink,
       nameRU: movie.nameRU,
       nameEN: movie.nameEN,
       thumbnail: movie.thumbnail,

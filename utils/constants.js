@@ -1,4 +1,4 @@
-const MONGOBD_ADRESS = 'mongodb://127.0.0.1:27017/bitfilmsdb';
+const { MONGOBD_ADRESS = 'mongodb://127.0.0.1:27017/bitfilmsdb' } = process.env;
 
 const CORS_ADRESS = [
   'http://localhost:4000',
